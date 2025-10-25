@@ -1,68 +1,63 @@
 import React, { useState } from "react";
-import Dashboard from "./sections/Dashboard";
-import Medications from "./sections/Medications";
-import SeizureLogging from "./sections/SeizureLogging";
-import OurStory from "./sections/OurStory";
-import SnootShakeTimer from "./components/SnootShakeTimer";
-import logo from "./assets/logo.png"; // Use your uploaded logo
+import Layout from "./components/Layout.jsx";
+import Dashboard from "./sections/Dashboard.jsx";
+import Medications from "./sections/Medications.jsx";
+import SeizureLogging from "./sections/SeizureLogging.jsx";
+import OurStory from "./sections/OurStory.jsx";
+import ProfilePage from "./pages/Auth/ProfilePage.jsx"; // Placeholder profile page
+import Labs from "./sections/Labs.jsx"; // <-- Make sure this is imported
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("Dashboard");
+  const [profileView, setProfileView] = useState(false);
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case "Dashboard":
-        return <Dashboard />;
-      case "Medications":
-        return <Medications />;
-      case "Seizure Logging":
-        return <SeizureLogging />;
-      case "About Us":
-        return <OurStory />;
-      default:
-        return <Dashboard />;
+  const [medications, setMedications] = useState([]);
+  const [seizures, setSeizures] = useState([]);
+
+  const tabs = ["Dashboard", "Medications", "Seizure Logs", "Labs", "About Us"]; // <-- added Labs here
+
+  const handleNavigate = (option) => {
+    if (option === "profile") {
+      setProfileView(true);
+    } else if (option === "signout") {
+      console.log("Sign out clicked");
+      setProfileView(false);
+      setActiveTab("Dashboard");
     }
   };
 
-  const tabs = ["Dashboard", "Medications", "Seizure Logging", "About Us"];
+  const renderContent = () => {
+    if (profileView) return <ProfilePage />;
+
+    switch (activeTab) {
+      case "Dashboard":
+        return <Dashboard medications={medications} seizures={seizures} />;
+      case "Medications":
+        return <Medications medications={medications} setMedications={setMedications} />;
+      case "Seizure Logs":
+        return <SeizureLogging seizures={seizures} setSeizures={setSeizures} />;
+      case "Labs": // <-- added this case
+        return <Labs />;
+      case "About Us":
+        return <OurStory />;
+      default:
+        return <Dashboard medications={medications} seizures={seizures} />;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header with logo and title */}
-      <header className="flex items-center justify-between p-4 bg-white shadow-md">
-        <div className="flex items-center gap-3">
-          <img src={logo} alt="SnootShake Logo" className="h-12 w-auto" />
-          <h1 className="text-2xl font-bold text-gray-800">SnootShake</h1>
-        </div>
-      </header>
-
-      {/* Tabs */}
-      <nav className="flex justify-center bg-gray-100 shadow-sm">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-3 text-sm font-semibold ${
-              activeTab === tab
-                ? "border-b-2 border-red-500 text-red-600"
-                : "text-gray-600 hover:text-gray-800"
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </nav>
-
-      {/* Timer */}
-      <SnootShakeTimer />
-
-      {/* Tab content */}
-      <main className="p-4">{renderContent()}</main>
-    </div>
+    <Layout
+      tabs={tabs}
+      activeTab={activeTab}
+      onTabChange={(tab) => {
+        setActiveTab(tab);
+        setProfileView(false); // leaving profile view when switching tabs
+      }}
+      onNavigate={handleNavigate}
+      profileView={profileView}
+    >
+      {renderContent()}
+    </Layout>
   );
 }
-
-
-
-
 
